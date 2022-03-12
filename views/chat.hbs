@@ -1,0 +1,185 @@
+<div id="rushabh_chatpage">
+    <div class="container py-5 px-4">
+        <header class="text-center">
+            <h1 class="display-4 text-white">Chat with your friends &nbsp;<i class="fa fa-comment"></i></h1>
+        </header>
+        <br>
+        <div class="row rounded-lg overflow-hidden shadow">
+            <div class="col-5 px-0">
+                <div class="bg-white">
+
+                    <div class="bg-gray px-4 py-2 bg-light">
+                        <p class="h5 mb-0 py-1">Recent</span></p>
+                    </div>
+
+                    <div class="messages-box">
+                        <div class="list-group rounded-0">
+                            <input id="search" name="search" type="text" placeholder="Search"
+                                class="form-control border-0 shadow-sm px-4" onkeyup="searchPeople()">
+                            <div id="recentchats">
+                                {{#each recentChats}}
+                                <a href="/chat/room/{{this._id}}"
+                                    class="list-group-item list-group-item-action rounded-0">
+                                    <div class="media" style="height: max-content;">
+                                        <img src="{{this.avatar}}" alt="user" width="50" class="rounded-circle"
+                                            style="float: left; margin-right: 3%;">
+                                        <div class="media-body">
+                                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                                <h6 class="mb-0">{{this.username}}</h6>
+                                                <small class="small font-weight-bold">{{this.day}}
+                                                    {{this.month}}</small>
+                                            </div>
+                                            <p class="font-italic mb-0 text-small" id="lm">{{this.lastMessage}}</p>
+                                        </div>
+                                    </div>
+                                </a>
+                                {{/each}}
+                            </div>
+                            <div id="searchresults">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-7 px-0">
+                <div class="px-4 py-5 chat-box bg-white" id="messageDiv">
+                </div>
+                <div class="bg-light">
+                    <div class="input-group">
+                        <input type="text" placeholder="Type a message" id="msg" style="height: 48px;"
+                            aria-describedby="button-addon2" class="form-control rounded-0 border-0 bg-light">
+                        <div class="input-group-append">
+                            <button id="button-addon2" type="button" onclick="sendMessage()" class="btn btn-link"> <i
+                                    class="fa fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+<br>
+<br>
+<input type="hidden" value="{{prevChats}}" id="prev">
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    document.getElementById("messageDiv").innerHTML = document.getElementById("prev").value;
+    //var socket = io('https://OASIS-isaa.herokuapp.com/');
+    var socket = io('http://localhost:3000/');
+    localStorage.setItem("lastmsg", $("#lm").text());
+
+    if("{{chatRoom._id}}" != "") {
+        socket.emit('joinChat', {
+            room: "{{chatRoom._id}}"
+        });
+    }
+ 
+
+    var sendMessage = function () {
+        var message = $("#msg").val();
+        socket.emit('chatMessage', {
+            message: message,
+            userid: "{{user._id}}",
+            chat: "{{chatRoom._id}}"
+        });
+        $('#msg').val("");
+    };
+
+    var addMsg = function (data) {
+        if ((data.userid).toString() != ("{{user._id}}").toString()) {
+            return (`<div class="d-flex justify-content-start">
+                        <div class ="media-body ml-3">
+                            <div class ="bg-light rounded py-2 px-3 mb-2" style="margin-left: 5px;">
+                                <h6>` + data.username + `</h6>
+                                <p class ="text-small mb-0 text-muted">` + data.message + `</p>
+                            </div>
+                            <p class ="small text-muted" style="margin-left: 10px;">` + data.hours + `:` + data.minute + ` | ` + data.month + ` ` + data.day + `</p>
+                        </div>
+                    </div>`);
+        }
+        else {
+            return (`<div class="d-flex justify-content-end">
+                        <div class="media-body">
+                            <div class="bg-primary rounded py-2 px-3 mb-2">
+                                <h6 class="text-white">` + data.username + `</h6>
+                                <p class="text-small mb-0 text-white">` + data.message + `
+                                </p>
+                            </div>
+                            <p class="small text-muted">` + data.hours + `:` + data.minute + ` | ` + data.month + ` ` + data.day + `</p>
+                        </div>
+                    </div>`);
+        }
+    }
+    socket.on('chatMessage', function (data) {
+        //alert("New Message");
+        $('#messageDiv').append(addMsg(data));
+        $("#lm").text(data.message);
+        localStorage.setItem("lastmsg", $("#lm").text());
+    });
+
+
+
+    var searchPeople = function () {
+        var q = $("#search").val();
+        if (q == "") {
+            document.getElementById("searchresults").innerHTML = "";
+            document.getElementById("recentchats").style.display = "initial";
+            document.getElementById("searchresults").style.display = "none";
+        }
+        if (q != "") {
+            document.getElementById("recentchats").style.display = "none";
+            document.getElementById("searchresults").style.display = "initial";
+            const xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && (this.status == 200 || this.status == 304)) {
+                    console.log(this.responseText);
+                    result = JSON.parse(this.responseText);
+                    var html = `
+                        <br>
+                        <h4>&nbsp; &nbsp;Search Results</h4>
+                        `;
+                    for (var i = 0; i < result.length; i++) {
+                        html += `
+                            <a href="/chat/joinChat/` + result[i]._id + `" class="list-group-item">
+                                <div class="media">
+                                    <h6 class="mb-0">` + result[i].name + `</h6>
+                                </div>
+                            </a>`;
+                    }
+                    document.getElementById("searchresults").innerHTML = html;
+                }
+            };
+            xhttp.open("GET", "/chat/search/" + q);
+            xhttp.send();
+        }
+    }
+
+    $(function () {
+        $("#recentchats").each(function () {
+            $(this).find("a:first").addClass("active");
+        });
+    });
+
+    var d = $('#messageDiv');
+    d.scrollTop(d.prop("scrollHeight"));
+
+    var timer;
+    $("#msg").on("keyup", function () {
+        clearInterval(timer);
+        socket.emit('typing', {
+                user: "{{user.name}}",
+                room: "{{chatRoom._id}}"
+            });
+        timer = setTimeout(function () {
+            $("#lm").text(localStorage.getItem("lastmsg"));
+        }, 2 * 1000);
+    });
+
+    socket.on('typing', function (data) {
+        $("#lm").text(data.user + " is typing...");
+    });
+</script>

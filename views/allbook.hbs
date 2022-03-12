@@ -1,0 +1,129 @@
+<div class="container">
+  <br>
+  <br>
+  <div class="d-flex justify-content-between">
+    <div>
+      <h2 style="display: inline;">Upload your books here: </h2><a href="/books/bookupload"
+        style="font-size: larger; margin-top:-12px" class="btn btn-light">Upload</a>
+    </div>
+    <div>
+      <form action="" method="GET">
+        <input type="text" name="q">
+        <input type="submit" class="btn btn-light" value="Search">
+      </form>
+    </div>
+  </div>
+</div>
+
+<br>
+<br>
+<div class="container">
+  <div class="row" id="notsearch">
+    {{#each book}}
+    <div class="col-lg-3 {{this.name}}">
+      <div class="card" style="width: 18rem;">
+
+        <img class="card-img-top" src="https://ui-avatars.com/api/?name={{this.name}}" alt="Card image cap">
+
+        <div class="card-body">
+          <h5 class="card-title">{{this.name}}</h5>
+          <p class="card-text">{{this.description}}</p>
+          <a href="{{this.link}}" class="btn btn-primary">Open Book</a>
+        </div>
+
+      </div>
+    </div>
+    {{/each}}
+  </div>
+  <div class="row" id="search" style="display: none;">
+  </div>
+</div>
+
+<br>
+<br>
+<br>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+
+    /*
+      Get the search query from the URL. For example:
+      http://xss-example-page.nowhere/?q=Searching+for+things
+    */
+    var q = getQueryParameter('q');
+
+    if (q) {
+
+      search(q, function (error, results) {
+        showQueryAndResults(q, results);
+      });
+    }
+  });
+
+  function search(q, callback) {
+    var results = [];
+    //fetch(`https://OASIS-isaa.herokuapp.com/books/getdata/`)
+    fetch(`http://localhost:3000/books/getdata/`)
+      .then(res => res.json())
+      .then(data => {
+        results = data;
+        callback(null, results);
+      })
+      .catch(err => console.log(err))
+
+
+  }
+
+  function showQueryAndResults(q, results) {
+
+    var resultsEl = document.querySelector('#search');
+    var regex = new RegExp(q, "i");
+    document.getElementById('notsearch').style.display = "none";
+    document.getElementById('search').style.display = "block";
+    var html = ``;
+    html += `<h2>Searching for ` + q + `...</h2><br>`;
+    //console.log(results);
+    for (var index = 0; index < results.length; index++) {
+      //alert("hello");
+      //alert(regex);
+      if (regex.test(results[index].name)) {
+        html += `
+          <div class="col-lg-3">
+      <div class="card" style="width: 18rem;">
+
+        <img class="card-img-top" src="https://ui-avatars.com/api/?name=` + results[index].name + `" alt="Card image cap">
+
+        <div class="card-body">
+          <h5 class="card-title">` + results[index].name + `</h5>
+          <p class="card-text">` + results[index].description + `</p>
+          <a href="` + results[index].link + `" class="btn btn-primary">Open Book</a>
+        </div>
+
+      </div>
+    </div>
+
+        `;
+      }
+    }
+
+    resultsEl.innerHTML = html;
+  }
+
+  function getQueryParameter(name) {
+
+    var pairs = window.location.search.substring(1).split('&');
+    var pair;
+
+    for (var index = 0; index < pairs.length; index++) {
+
+      pair = pairs[index].split('=');
+
+      if (decodeURIComponent(pair[0]) === name) {
+        return decodeURIComponent(pair[1]);
+      }
+    }
+
+    return false;
+  }
+</script>
+

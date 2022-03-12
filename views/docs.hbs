@@ -1,0 +1,70 @@
+<main>
+    <div class="container py-4">
+        <header class="pb-3 mb-4 border-bottom">
+            <a href="/documents" class="d-flex align-items-center text-dark text-decoration-none">
+                <i class="fa fa-file" style="margin-right: 20px; font-size: 28px"></i>
+                <span class="fs-4">Your Personal Documents</span>
+            </a>
+        </header>
+
+        <div class="p-5 mb-4 bg-light rounded-3">
+            <div class="container-fluid py-5">
+                <h1 class="display-5 fw-bold">Upload your documents.</h1>
+                <p class="col-md-8 fs-4">Save all your personal documents, and access them anywhere, anytime at one
+                    place.</p>
+                <button class="btn btn-primary btn-lg" type="button" data-bs-toggle="modal"
+                    data-bs-target="#upload">Upload</button>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="upload" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Upload Document</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="/documents/upload" method="POST" enctype="multipart/form-data">
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="name">Name</label>
+                                <input type="text" class="form-control" id="name" name="name">
+                            </div>
+                            <br>
+                            <div class="form-group">
+                                <label for="desc">Description</label>
+                                <textarea class="form-control" id="desc" name="description" rows="3"></textarea>
+                            </div>
+                            <br>
+                            <div class="form-group">
+                                <label for="file">File</label>
+                                <input type="file" class="form-control" id="file" name="file">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Upload</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="row align-items-md-stretch">
+            {{#each documents}}
+            <div class="col-md-6">
+                <div class="h-100 p-5 text-white bg-dark rounded-3">
+                    <h2>{{this.name}}</h2>
+                    <p>{{this.description}}</p>
+                    <a href="/documents/getfile/{{this.location}}">
+                        <button class="btn btn-outline-light" type="button">View</button>
+                    </a>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</main>
+<br>
+<br>
