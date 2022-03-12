@@ -19,13 +19,20 @@
                             <p class="text-muted mb-4">Please enter your email ID and password.</p>
                             <form method="POST" action="/users/login">
                                 <div class="form-group mb-3">
-                                    <input id="inputEmail" name="email" type="email" placeholder="Email address" required=""
+                                    <input id="inputEmail" name="email" type="email" placeholder="Email address" required
                                         autofocus="" class="form-control rounded-pill border-0 shadow-sm px-4">
                                 </div>
                                 <div class="form-group mb-3">
-                                    <input id="inputPassword" name="password" type="password" placeholder="Password" required=""
+                                    <input id="inputPassword" name="password" type="password" placeholder="Password" required
                                         class="form-control rounded-pill border-0 shadow-sm px-4 text-primary">
                                 </div>
+                                {{!-- <div class="form-group mb-3">
+                                    <input id="otp" name="otp" type="password" placeholder="OTP" required
+                                        class="form-control rounded-pill border-0 shadow-sm px-4 text-primary" style="width: 45%; float:left">
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <button type="button" onclick="sendOTP()"
+                                        class="btn btn-block text-uppercase mb-2 rounded-pill shadow-sm" style="width: 45%;">Get OTP</button>
+                                </div> --}}
                                 <div class="custom-control custom-checkbox mb-3">
                                     <input id="customCheck1" type="checkbox" checked class="custom-control-input">
                                     <label for="customCheck1" class="custom-control-label">Remember password</label>
@@ -34,7 +41,7 @@
                                     class="btn btn-primary btn-block text-uppercase mb-2 rounded-pill shadow-sm">Sign
                                     in</button>
                                 <div class="text-center d-flex justify-content-between mt-4">
-                                    <p>Don't have an account? <a href="/users/register"
+                                    <p>Don't have an account? <a href="/register"
                                             class="font-italic text-muted">
                                             <u>Register</u></a></p>
                                 </div>
@@ -50,3 +57,18 @@
 </div>
 <br>
 <br> 
+
+<script>
+    function sendOTP() {
+        if(document.getElementById('inputEmail').value == "") {
+            alert("Please enter valid E - Mail ID.");
+            return;
+        }
+        fetch((`http://localhost:3000/users/getotp/` + document.getElementById('inputEmail').value))
+        .then(res => res.json())
+        .then(data => {
+            alert("OTP sent to registered email ID")
+        })
+        .catch(err => console.log(err))
+    }
+</script>

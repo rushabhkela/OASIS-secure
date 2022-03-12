@@ -6,10 +6,7 @@ var logger = require('morgan');
 var dotenv = require('dotenv');
 dotenv.config({ path: "./.env" });
 var cors = require('cors')
-
-
-var passport = require('passport');
-require('./utils/passport');
+var deserializeUser = require('./middlewares/deserialiseUser');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -18,6 +15,7 @@ var bookRouter = require('./routes/book');
 var docRouter = require('./routes/docs');
 
 require('./utils/connectDB');
+
 
 var app = express();
 
@@ -31,7 +29,7 @@ app.use(
       code: 429,
       message: "Too many requests from single IP address, please try again later."
     }
-}))
+  }))
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -43,6 +41,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
+app.use(deserializeUser);
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
@@ -51,12 +50,12 @@ app.use('/books', bookRouter);
 app.use('/documents', docRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};

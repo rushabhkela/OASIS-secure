@@ -1,10 +1,12 @@
 <div id="rushabh_chatpage">
     <div class="container py-5 px-4">
+        <!-- For demo purpose-->
         <header class="text-center">
             <h1 class="display-4 text-white">Chat with your friends &nbsp;<i class="fa fa-comment"></i></h1>
         </header>
         <br>
         <div class="row rounded-lg overflow-hidden shadow">
+            <!-- Users box-->
             <div class="col-5 px-0">
                 <div class="bg-white">
 
@@ -42,9 +44,13 @@
                     </div>
                 </div>
             </div>
+            <!-- Chat Box-->
             <div class="col-7 px-0">
                 <div class="px-4 py-5 chat-box bg-white" id="messageDiv">
+
                 </div>
+
+                <!-- Typing area -->
                 <div class="bg-light">
                     <div class="input-group">
                         <input type="text" placeholder="Type a message" id="msg" style="height: 48px;"
@@ -66,23 +72,23 @@
 <input type="hidden" value="{{prevChats}}" id="prev">
 
 <script src="/socket.io/socket.io.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
 <script>
     document.getElementById("messageDiv").innerHTML = document.getElementById("prev").value;
-    //var socket = io('https://OASIS-isaa.herokuapp.com/');
-    var socket = io('http://localhost:3000/');
+    var socket = io('https://OASIS-secure.herokuapp.com/');
+    //var socket = io('http://localhost:3000/');
     localStorage.setItem("lastmsg", $("#lm").text());
 
-    if("{{chatRoom._id}}" != "") {
+    if ("{{chatRoom._id}}" != "") {
         socket.emit('joinChat', {
             room: "{{chatRoom._id}}"
         });
     }
- 
 
     var sendMessage = function () {
         var message = $("#msg").val();
         socket.emit('chatMessage', {
-            message: message,
+            message: CryptoJS.AES.encrypt(message, "OASISISAA").toString(),
             userid: "{{user._id}}",
             chat: "{{chatRoom._id}}"
         });
@@ -95,7 +101,7 @@
                         <div class ="media-body ml-3">
                             <div class ="bg-light rounded py-2 px-3 mb-2" style="margin-left: 5px;">
                                 <h6>` + data.username + `</h6>
-                                <p class ="text-small mb-0 text-muted">` + data.message + `</p>
+                                <p class ="text-small mb-0 text-muted">` + CryptoJS.AES.decrypt(data.message, "OASISISAA").toString(CryptoJS.enc.Utf8) + `</p>
                             </div>
                             <p class ="small text-muted" style="margin-left: 10px;">` + data.hours + `:` + data.minute + ` | ` + data.month + ` ` + data.day + `</p>
                         </div>
@@ -106,7 +112,7 @@
                         <div class="media-body">
                             <div class="bg-primary rounded py-2 px-3 mb-2">
                                 <h6 class="text-white">` + data.username + `</h6>
-                                <p class="text-small mb-0 text-white">` + data.message + `
+                                <p class="text-small mb-0 text-white">` + CryptoJS.AES.decrypt(data.message, "OASISISAA").toString(CryptoJS.enc.Utf8) + `
                                 </p>
                             </div>
                             <p class="small text-muted">` + data.hours + `:` + data.minute + ` | ` + data.month + ` ` + data.day + `</p>
@@ -115,9 +121,8 @@
         }
     }
     socket.on('chatMessage', function (data) {
-        //alert("New Message");
         $('#messageDiv').append(addMsg(data));
-        $("#lm").text(data.message);
+        $("#lm").text(CryptoJS.AES.decrypt(data.message, "OASISISAA").toString(CryptoJS.enc.Utf8));
         localStorage.setItem("lastmsg", $("#lm").text());
     });
 
@@ -171,9 +176,9 @@
     $("#msg").on("keyup", function () {
         clearInterval(timer);
         socket.emit('typing', {
-                user: "{{user.name}}",
-                room: "{{chatRoom._id}}"
-            });
+            user: "{{user.name}}",
+            room: "{{chatRoom._id}}"
+        });
         timer = setTimeout(function () {
             $("#lm").text(localStorage.getItem("lastmsg"));
         }, 2 * 1000);

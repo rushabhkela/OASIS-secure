@@ -1,52 +1,103 @@
 var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
-const { v4: uuidv4 } = require('uuid');
-const Auth = require('../middlewares/auth');
+
+var dotenv = require('dotenv');
+dotenv.config({ path: "../.env" });
+
+const DBmodule = require("../utils/connectDB");
+const createSession = DBmodule.createSession;
+
+const JWTmodule = require("../utils/jwtUtils");
+const signJWT = JWTmodule.signJWT;
+
+
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.TWILIO_SENDGRID_API_KEY)
 
 router.route('/register')
   .get(async (req, res) => {
-    res.render('signup', { title: "OASIS - Sign up" })
+    res.render('signup', { title: 'OASIS - Sign up' });
   })
   .post(async (req, res) => {
     var newUser = new User({
-      name: req.body.name,
-      regno: req.body.regno,
       email: req.body.email,
+      regno: req.body.regno,
+      name: req.body.name,
       contact: req.body.contact,
-      password: req.body.password
     });
 
     await newUser.save();
-    res.redirect('/users/login')
-  })
+    newUser.setPassword(req.body.password);
+    newUser.save(function (err) {
+      if (err) {
+        res.render('register', { errorMessages: err });
+      } else {
+        res.redirect('/users/login');
+      }
+    })
+  });
+
 
 router.route('/login')
   .get(async (req, res) => {
     res.render('login', { title: "OASIS - Login" })
   })
   .post(async (req, res) => {
-    var email = req.body.email;
-    var password = req.body.password;
-
-    const user = await User.findOne({ email: email, password: password });
-    if (!user) {
-      res.redirect('/users/login');
+    const { otp, password, email } = req.body;
+    var user = await User.findOne({ email: email });
+    if (otp != user.otp) {
+      res.redirect('/users/logout');
     }
     else {
-      user.token = uuidv4();
-      await user.save();
-      res.cookie("token", user.token);
+      const session = createSession(user);
+      const accessToken = signJWT({ email : user.email, sessionId: session.sessionId }, "5s");
+      const refreshToken = signJWT({ sessionId: session.sessionId }, '10s');
+      res.cookie('accessToken', accessToken, {
+        maxAge: 5000,
+        httpOnly: true
+      });
+
+      res.cookie('refreshToken', refreshToken, {
+        maxAge: 10000,
+        httpOnly: true
+      });
+
       res.redirect('/');
     }
   })
 
 
+router.get('/getotp/:email', async (req, res) => {
+  const randNum = Math.floor((Math.random() * 100000) + 10000);
+  const msg = {
+    to: req.params.email,
+    from: 'oasis.ism2022@gmail.com',
+    subject: 'OTP - Please do not share with anyone',
+    html: `<h1>Hello, User!</h1>
+  <h4>Your OTP for logging into OASIS is : </h4>
+  <h2>` + randNum + `</h2>
+  <h4>Thank You</h4>
+  <h4>OASIS Team</h4>
+  `
+  }
+  sgMail
+    .send(msg)
+    .then(async () => {
+      console.log('Email sent');
+      await User.findOneAndUpdate({ email: req.params.email }, { otp: randNum });
+      res.status(200).json({ "message": "OTP sent" });
+    })
+    .catch((error) => {
+      console.log(error);
+    })
+});
+
+
 router.get('/logout', async (req, res) => {
+  await User.findOneAndUpdate({ email: req.params.email }, { otp: -1 });
   req.logout();
-  await User.findOneAndUpdate({ token: req.cookies['token'].toString() }, { token: "" })
-  res.clearCookie("token");
-  res.redirect('/');
+  res.redirect('/users/login');
 });
 
 module.exports = router;

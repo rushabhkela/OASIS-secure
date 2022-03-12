@@ -1,18 +1,18 @@
 var express = require('express');
 var router = express.Router();
-const Auth = require('../middlewares/auth');
+const requireUser = require("../middlewares/requireUser");
 
 router.get('/', async (req, res) => {
-  var user = null;
-  if (req.cookies['token']) {
-    user = await User.findOne({ token: req.cookies['token'].toString() });
-  }
-  res.render('index', { title: 'OASIS - Home', user: user });
+  res.render('index', { title: 'OASIS - Home'});
 });
 
 router.get('/error', async (req, res) => {
-  res.render('error', { title: "OASIS", user: req.user });
+  res.render('error', { title: "OASIS"});
 })
+
+router.get('/secret', requireUser, async (req, res) => {
+  res.render('indexs', { title: 'OASIS - Home'});
+});
 
 
 module.exports = router;

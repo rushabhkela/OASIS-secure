@@ -1,25 +1,29 @@
 var express = require('express');
 var router = express.Router();
 const mongoose = require('mongoose');
-const Auth = require('../middlewares/auth');
+var CryptoJS = require("crypto-js");
 
-router.get('/', Auth, async (req, res) => {
-    console.log(req.user._id);
-    const recent = await Chat.find({ $or: [{ user1: req.user._id }, { user2: req.user._id }] }).sort({ lastActivity: -1 });
-    try {
-        res.redirect('/chat/room/' + recent[0]._id);
-    } catch (error) {
-        res.redirect('/chat/room/new');
+router.get('/', async (req, res) => {
+    if (!req.user) {
+        res.redirect('/users/login');
+    }
+    else {
+        const recent = await Chat.find({ $or: [{ user1: req.user._id }, { user2: req.user._id }] }).sort({ lastActivity: -1 });
+        try {
+            res.redirect('/chat/room/' + recent[0]._id);
+        } catch (error) {
+            res.redirect('/chat/room/new');
+        }
     }
 });
 
-router.get('/search/:q', Auth, async (req, res) => {
+router.get('/search/:q', async (req, res) => {
     var q = req.params.q;
     const users = await User.find({ name: RegExp(q, 'i') }, {}).select('name');
     res.status(200).json(users);
 });
 
-router.get('/joinChat/:id', Auth, async (req, res) => {
+router.get('/joinChat/:id', async (req, res) => {
     var user1 = (req.user._id).toString();
     var user2 = (req.params.id).toString();
     if (user1 > user2) {
@@ -43,9 +47,9 @@ router.get('/joinChat/:id', Auth, async (req, res) => {
     res.redirect('/chat/room/' + conversation._id);
 })
 
-router.get('/room/:id', Auth, async (req, res) => {
+router.get('/room/:id', async (req, res) => {
     if (req.params.id == "new") {
-        res.render('chat', { title: 'OASIS - Chat', user: req.user });
+        res.render('chat', { title: 'OASIS - Chat' });
     }
     else {
         const chatRoom = await Chat.findOne({ _id: mongoose.Types.ObjectId(req.params.id) });
@@ -86,7 +90,7 @@ router.get('/room/:id', Auth, async (req, res) => {
                         <div class ="media-body ml-3">
                             <div class ="bg-light rounded py-2 px-3 mb-2" style="margin-left: 5px;">
                                 <h6>` + user.name + `</h6>
-                                <p class ="text-small mb-0 text-muted">` + msg.content + `</p>
+                                <p class ="text-small mb-0 text-muted">` + CryptoJS.AES.decrypt(msg.content, "OASISISAA").toString(CryptoJS.enc.Utf8) + `</p>
                             </div>
                             <p class ="small text-muted" style="margin-left: 10px;">` + hours + `:` + minute + ` | ` + month + ` ` + day + `</p>
                         </div>
@@ -97,7 +101,7 @@ router.get('/room/:id', Auth, async (req, res) => {
                         <div class="media-body">
                             <div class="bg-primary rounded py-2 px-3 mb-2">
                             <h6 class="text-white">` + user.name + `</h6>
-                                <p class="text-small mb-0 text-white">` + msg.content + `
+                                <p class="text-small mb-0 text-white">` + CryptoJS.AES.decrypt(msg.content, "OASISISAA").toString(CryptoJS.enc.Utf8) + `
                                 </p>
                             </div>
                             <p class="small text-muted">` + hours + `:` + minute + ` | ` + month + ` ` + day + `</p>
@@ -105,7 +109,7 @@ router.get('/room/:id', Auth, async (req, res) => {
                     </div>`;
             }
         }
-        res.render('chat', { title: 'OASIS - Chat', user: req.user, chatRoom: chatRoom, recentChats: recentChats, prevChats: html });
+        res.render('chat', { title: 'OASIS - Chat', chatRoom: chatRoom, recentChats: recentChats, prevChats: html });
     }
 })
 
