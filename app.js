@@ -7,6 +7,7 @@ var dotenv = require('dotenv');
 dotenv.config({ path: "./.env" });
 var cors = require('cors')
 
+
 var passport = require('passport');
 require('./utils/passport');
 
@@ -19,6 +20,18 @@ var docRouter = require('./routes/docs');
 require('./utils/connectDB');
 
 var app = express();
+
+// Rate Limiter
+const limiter = require("express-rate-limit");
+app.use(
+  limiter({
+    windowMs: 5000,
+    max: 5,
+    message: {
+      code: 429,
+      message: "Too many requests from single IP address, please try again later."
+    }
+}))
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
