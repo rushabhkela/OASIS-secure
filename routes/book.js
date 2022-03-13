@@ -23,11 +23,11 @@ const upload = multer({ storage }).single('file');
 
 router.get('/', async (req, res) => {
     const books = await Book.find({});
-    res.render('allbook', { title: 'OASIS - Library', book: books });
+    res.render('allbook', { title: 'OASIS - Library', book: books, user: req.user });
 })
 
 router.get('/bookupload', async (req, res) => {
-    res.render("book", { title: 'OASIS - Book Upload' });
+    res.render("book", { title: 'OASIS - Book Upload', user: req.user  });
 })
 
 router.route('/upload')

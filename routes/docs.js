@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
     }
     else {
         const documents = await Docs.find({ ofUser: mongoose.Types.ObjectId(req.user._id) });
-        res.render('docs', { title: "OASIS - Documents", documents: documents });
+        res.render('docs', { title: "OASIS - Documents", documents: documents, user: req.user  });
     }
 })
 

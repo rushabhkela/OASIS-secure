@@ -36,6 +36,10 @@ const createSession = (user) => {
   const session = {
     sessionId,
     email: user.email,
+    _id: user._id,
+    regno: user.regno,
+    name: user.name,
+    contact: user.contact,
     valid: true,
   };
   sessions[sessionId] = session;

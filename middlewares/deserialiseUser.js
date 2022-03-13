@@ -6,6 +6,7 @@ const signJWT = JWTmodule.signJWT;
 const verifyJWT = JWTmodule.verifyJWT;
 
 function deserializeUser(req, res, next) {
+  
   const { accessToken, refreshToken } = req.cookies;
 
   if (!accessToken && !refreshToken) {
@@ -13,7 +14,6 @@ function deserializeUser(req, res, next) {
   }
 
   const { payload, expired } = verifyJWT(accessToken);
-
   console.log(payload);
   if (payload) {
     req.user = payload;
@@ -27,9 +27,9 @@ function deserializeUser(req, res, next) {
   if(!session) {
       return next();
   }
-  const newAccessToken = signJWT(session, "5s");
+  const newAccessToken = signJWT(session, "5m");
   res.cookie("accessToken", newAccessToken, {
-      maxAge : 5000,
+      maxAge : 300000,
       httpOnly : true
   });
 

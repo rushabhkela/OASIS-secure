@@ -88,7 +88,7 @@
     var sendMessage = function () {
         var message = $("#msg").val();
         socket.emit('chatMessage', {
-            message: CryptoJS.AES.encrypt(message, "OASISISAA").toString(),
+            message: CryptoJS.AES.encrypt(message, "{{chatRoom.key}}").toString(),
             userid: "{{user._id}}",
             chat: "{{chatRoom._id}}"
         });
@@ -101,7 +101,7 @@
                         <div class ="media-body ml-3">
                             <div class ="bg-light rounded py-2 px-3 mb-2" style="margin-left: 5px;">
                                 <h6>` + data.username + `</h6>
-                                <p class ="text-small mb-0 text-muted">` + CryptoJS.AES.decrypt(data.message, "OASISISAA").toString(CryptoJS.enc.Utf8) + `</p>
+                                <p class ="text-small mb-0 text-muted">` + CryptoJS.AES.decrypt(data.message, "{{chatRoom.key}}").toString(CryptoJS.enc.Utf8) + `</p>
                             </div>
                             <p class ="small text-muted" style="margin-left: 10px;">` + data.hours + `:` + data.minute + ` | ` + data.month + ` ` + data.day + `</p>
                         </div>
@@ -112,7 +112,7 @@
                         <div class="media-body">
                             <div class="bg-primary rounded py-2 px-3 mb-2">
                                 <h6 class="text-white">` + data.username + `</h6>
-                                <p class="text-small mb-0 text-white">` + CryptoJS.AES.decrypt(data.message, "OASISISAA").toString(CryptoJS.enc.Utf8) + `
+                                <p class="text-small mb-0 text-white">` + CryptoJS.AES.decrypt(data.message, "{{chatRoom.key}}").toString(CryptoJS.enc.Utf8) + `
                                 </p>
                             </div>
                             <p class="small text-muted">` + data.hours + `:` + data.minute + ` | ` + data.month + ` ` + data.day + `</p>
@@ -122,7 +122,7 @@
     }
     socket.on('chatMessage', function (data) {
         $('#messageDiv').append(addMsg(data));
-        $("#lm").text(CryptoJS.AES.decrypt(data.message, "OASISISAA").toString(CryptoJS.enc.Utf8));
+        $("#lm").text(CryptoJS.AES.decrypt(data.message, "{{chatRoom.key}}").toString(CryptoJS.enc.Utf8));
         localStorage.setItem("lastmsg", $("#lm").text());
     });
 

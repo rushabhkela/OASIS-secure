@@ -1,7 +1,8 @@
 var express = require('express');
 var router = express.Router();
 const mongoose = require('mongoose');
-var CryptoJS = require("crypto-js");
+const crypto = require("crypto");
+const CryptoJS = require("crypto-js");
 
 router.get('/', async (req, res) => {
     if (!req.user) {
@@ -36,10 +37,16 @@ router.get('/joinChat/:id', async (req, res) => {
     user2 = mongoose.Types.ObjectId(user2);
     var conversation = await Chat.findOne({ user1: user1, user2: user2 });
     if (!conversation) {
+        const alice = crypto.getDiffieHellman('modp15');
+        const bob = crypto.getDiffieHellman('modp15');
+        alice.generateKeys();
+        bob.generateKeys();
+
         var newConv = new Chat({
             user1: user1,
             user2: user2,
-            lastActivity: new Date()
+            lastActivity: new Date(),
+            key: alice.computeSecret(bob.getPublicKey(), null, 'hex')
         });
         await newConv.save();
         conversation = newConv;
@@ -49,7 +56,7 @@ router.get('/joinChat/:id', async (req, res) => {
 
 router.get('/room/:id', async (req, res) => {
     if (req.params.id == "new") {
-        res.render('chat', { title: 'OASIS - Chat' });
+        res.render('chat', { title: 'OASIS - Chat', user: req.user  });
     }
     else {
         const chatRoom = await Chat.findOne({ _id: mongoose.Types.ObjectId(req.params.id) });
@@ -90,7 +97,7 @@ router.get('/room/:id', async (req, res) => {
                         <div class ="media-body ml-3">
                             <div class ="bg-light rounded py-2 px-3 mb-2" style="margin-left: 5px;">
                                 <h6>` + user.name + `</h6>
-                                <p class ="text-small mb-0 text-muted">` + CryptoJS.AES.decrypt(msg.content, "OASISISAA").toString(CryptoJS.enc.Utf8) + `</p>
+                                <p class ="text-small mb-0 text-muted">` + CryptoJS.AES.decrypt(msg.content, chatRoom.key).toString(CryptoJS.enc.Utf8) + `</p>
                             </div>
                             <p class ="small text-muted" style="margin-left: 10px;">` + hours + `:` + minute + ` | ` + month + ` ` + day + `</p>
                         </div>
@@ -101,7 +108,7 @@ router.get('/room/:id', async (req, res) => {
                         <div class="media-body">
                             <div class="bg-primary rounded py-2 px-3 mb-2">
                             <h6 class="text-white">` + user.name + `</h6>
-                                <p class="text-small mb-0 text-white">` + CryptoJS.AES.decrypt(msg.content, "OASISISAA").toString(CryptoJS.enc.Utf8) + `
+                                <p class="text-small mb-0 text-white">` + CryptoJS.AES.decrypt(msg.content, chatRoom.key).toString(CryptoJS.enc.Utf8) + `
                                 </p>
                             </div>
                             <p class="small text-muted">` + hours + `:` + minute + ` | ` + month + ` ` + day + `</p>
@@ -109,7 +116,7 @@ router.get('/room/:id', async (req, res) => {
                     </div>`;
             }
         }
-        res.render('chat', { title: 'OASIS - Chat', chatRoom: chatRoom, recentChats: recentChats, prevChats: html });
+        res.render('chat', { title: 'OASIS - Chat', chatRoom: chatRoom, recentChats: recentChats, prevChats: html, user: req.user  });
     }
 })
 

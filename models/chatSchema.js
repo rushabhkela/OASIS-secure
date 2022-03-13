@@ -11,7 +11,8 @@ const chatSchema = new mongoose.Schema({
         }
     ],
     lastActivity : Date,
-    lastMessage : String
+    lastMessage : String,
+    key: String
 });
 
 module.exports = mongoose.model('Chat', chatSchema);
