@@ -75,8 +75,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
 <script>
     document.getElementById("messageDiv").innerHTML = document.getElementById("prev").value;
-    var socket = io('https://OASIS-secure.herokuapp.com/');
-    //var socket = io('http://localhost:3000/');
+    // var socket = io('https://OASIS-secure.herokuapp.com/');
+    var socket = io('http://localhost:3000/');
     localStorage.setItem("lastmsg", $("#lm").text());
 
     if ("{{chatRoom._id}}" != "") {

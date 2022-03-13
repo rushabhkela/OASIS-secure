@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
+var sanitize = require('mongo-sanitize');
 
 var dotenv = require('dotenv');
 dotenv.config({ path: "../.env" });
@@ -21,10 +22,10 @@ router.route('/register')
   })
   .post(async (req, res) => {
     var newUser = new User({
-      email: req.body.email,
-      regno: req.body.regno,
-      name: req.body.name,
-      contact: req.body.contact,
+      email: sanitize(req.body.email),
+      regno: sanitize(req.body.regno),
+      name: sanitize(req.body.name),
+      contact: sanitize(req.body.contact),
     });
 
     await newUser.save();
@@ -45,8 +46,15 @@ router.route('/login')
   })
   .post(async (req, res) => {
     const { otp, password, email } = req.body;
-    var user = await User.findOne({ email: email });
-    if (otp != user.otp) {
+    var user = await User.findOne({ 
+      email: sanitize(email), 
+      password: sanitize(password) 
+    });
+
+    if(!user) {
+      res.redirect('/users/login');
+    }
+    else if (otp != user.otp) {
       res.redirect('/users/logout');
     }
     else {
