@@ -1,10 +1,11 @@
 const jwt = require("jsonwebtoken")
 const fs = require("fs")
+const path = require('path');
 const dotenv = require('dotenv')
 dotenv.config({path : "../.env"})
 
-const privateKey = fs.readFileSync(process.env.KEY_DIR + '/jwtRS256.key', 'utf8');
-const publicKey = fs.readFileSync(process.env.KEY_DIR + '/jwtRS256.pem', 'utf8');;
+const privateKey = fs.readFileSync(path.resolve(__dirname, process.env.KEY_DIR + '/jwtRS256.key'), 'utf8');
+const publicKey = fs.readFileSync(path.resolve(__dirname, process.env.KEY_DIR + '/jwtRS256.pem'), 'utf8');;
 
 const signJWT = (payload, expiresIn) => {
   return jwt.sign(payload, privateKey, { algorithm: "RS256", expiresIn });
