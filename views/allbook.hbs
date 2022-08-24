@@ -62,8 +62,7 @@
 
   function search(q, callback) {
     var results = [];
-    // fetch(`https://OASIS-secure.herokuapp.com/books/getdata/`)
-    fetch(`http://localhost:3000/books/getdata/`)
+    fetch(`https://oasis-secure.herokuapp.com/books/getdata/`)
       .then(res => res.json())
       .then(data => {
         results = data;
