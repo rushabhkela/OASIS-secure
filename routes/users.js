@@ -90,7 +90,7 @@ router.get('/getotp/:email', async (req, res) => {
   const randNum = Math.floor((Math.random() * 100000) + 10000);
   const msg = {
     to: req.params.email,
-    from: 'oasis.ism2022@gmail.com',
+    from: 'help.vitdost@gmail.com',
     subject: 'OTP - Please do not share with anyone',
     html: `<h1>Hello, User!</h1>
   <h4>Your OTP for logging into OASIS is : </h4>
