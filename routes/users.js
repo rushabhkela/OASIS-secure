@@ -57,9 +57,9 @@ router.route('/login')
     if (!user) {
       res.redirect('/users/login');
     }
-    // else if (otp != user.otp) {
-    //   res.redirect('/users/logout');
-    // }
+    else if (otp != user.otp) {
+      res.redirect('/users/logout');
+    }
     else {
       const session = createSession(user);
       const accessToken = signJWT({
