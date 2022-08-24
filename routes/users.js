@@ -50,8 +50,8 @@ router.route('/login')
   .post(async (req, res) => {
     const { otp, password, email } = req.body;
     var user = await User.findOne({
-      email: sanitize(email),
-      password: sanitize(password)
+      email: sanitize(`${email}`),
+      password: sanitize(`${password}`)
     });
 
     if (!user) {
