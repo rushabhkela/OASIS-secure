@@ -64,7 +64,7 @@
             alert("Please enter valid E - Mail ID.");
             return;
         }
-        fetch((`http://localhost:3000/users/getotp/` + document.getElementById('inputEmail').value))
+        fetch((`https://oasis-secure.herokuapp.com/users/getotp/` + document.getElementById('inputEmail').value))
         .then(res => res.json())
         .then(data => {
             alert("OTP sent to registered email ID")
