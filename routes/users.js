@@ -72,7 +72,7 @@ router.route('/login')
       }, "5m");
       const refreshToken = signJWT({ sessionId: session.sessionId }, '2d');
       res.cookie('accessToken', accessToken, {
-        maxAge: 300000,
+        maxAge: 600000,
         httpOnly: true
       });
 

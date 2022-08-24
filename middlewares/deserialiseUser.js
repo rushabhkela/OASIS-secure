@@ -27,9 +27,9 @@ function deserializeUser(req, res, next) {
   if(!session) {
       return next();
   }
-  const newAccessToken = signJWT(session, "5m");
+  const newAccessToken = signJWT(session, "10m");
   res.cookie("accessToken", newAccessToken, {
-      maxAge : 300000,
+      maxAge : 600000,
       httpOnly : true
   });
 
