@@ -4,8 +4,8 @@ const path = require('path');
 const dotenv = require('dotenv')
 dotenv.config({path : "../.env"})
 
-const privateKey = fs.readFileSync(path.resolve(__dirname, process.env.KEY_DIR + '/jwtRS256.key'), 'utf8');
-const publicKey = fs.readFileSync(path.resolve(__dirname, process.env.KEY_DIR + '/jwtRS256.pem'), 'utf8');;
+const privateKey = process.env.PVT_KEY;
+const publicKey = process.env.PUB_KEY;
 
 const signJWT = (payload, expiresIn) => {
   return jwt.sign(payload, privateKey, { algorithm: "RS256", expiresIn });
