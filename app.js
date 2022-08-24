@@ -24,7 +24,7 @@ const limiter = require("express-rate-limit");
 app.use(
   limiter({
     windowMs: 5000,
-    max: 50,
+    max: 5,
     message: {
       code: 429,
       message: "Too many requests from single IP address, please try again later."
